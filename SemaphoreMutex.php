@@ -7,6 +7,18 @@ use Yii;
 class SemaphoreMutex extends \yii\mutex\Mutex
 {
     /**
+     * @inheritdoc
+     */
+    public function acquire($name, $timeout = null)
+    {
+        return parent::acquire($name, $timeout);
+    }
+    /**
+     * @var array $semaphores
+     */
+    protected $semaphores = [];
+    
+    /**
      * Receives shared memory segment by provided key
      * Shared memory is used in exclusive mode, so its providing atomic access
      * @param string $name
@@ -27,6 +39,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
                 if (sem_acquire($semId, true)) {
                     Yii::endProfile("Waiting for lock of $name", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $name lock", 'AtomicLock::receive');
+                    $this->semaphores[$name] = $semId;
                     return true;
                 }
                 sleep(1);
@@ -48,13 +61,12 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function releaseLock($name)
     {
-        if (!file_exists("/tmp/$name")) {
-            return false;
+        if (!isset($this->semaphores[$name])) {
+            return true;
         }
-        $semKey = ftok("/tmp/$name", 'a');
-        $semId = sem_get($semKey, 1);
+        $semId = $this->semaphores[$name];
         sem_release($semId);
-        Yii::endProfile("Total time in {$this->key} lock", 'AtomicLock::receive');
+        Yii::endProfile("Total time in $name lock", 'AtomicLock::receive');
         return true;
     }
 }
