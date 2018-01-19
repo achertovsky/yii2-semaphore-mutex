@@ -63,6 +63,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function releaseLock($name)
     {
+        $name = md5($name);
         if (!isset($this->semaphores[$name])) {
             return true;
         }
