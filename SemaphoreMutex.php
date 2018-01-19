@@ -27,6 +27,8 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function acquireLock($name, $timeout = null)
     {
+        //fix issue with reserved characters by hashing the name
+        $name = md5($name);
         try {
             if (!file_exists("/tmp/$name")) {
                 touch("/tmp/$name");
