@@ -27,6 +27,8 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function acquireLock($name, $timeout = null)
     {
+        //fix issue with reserved characters by hashing the name
+        $name = md5($name);
         try {
             $origName = $name;
             if (!file_exists("/tmp/$name")) {
@@ -63,6 +65,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
     public function releaseLock($name)
     {
         $origName = $name;
+        $name = md5($name);
         if (!isset($this->semaphores[$name])) {
             return true;
         }
