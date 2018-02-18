@@ -28,24 +28,25 @@ class SemaphoreMutex extends \yii\mutex\Mutex
     public function acquireLock($name, $timeout = null)
     {
         try {
+            $origName = $name;
             if (!file_exists("/tmp/$name")) {
                 touch("/tmp/$name");
             }
             $semKey = ftok("/tmp/$name", 'a');
             $semId = sem_get($semKey, 1);
             $start = 0;
-            Yii::beginProfile("Waiting for lock of $name", 'AtomicLock::receive');
+            Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
                 if (sem_acquire($semId, true)) {
-                    Yii::endProfile("Waiting for lock of $name", 'AtomicLock::receive');
-                    Yii::beginProfile("Total time in $name lock", 'AtomicLock::receive');
+                    Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
+                    Yii::beginProfile("Total time in $origName lock", 'AtomicLock::receive');
                     $this->semaphores[$name] = $semId;
                     return true;
                 }
                 sleep(1);
                 if (!is_null($timeout) && ($res = time()-$start) >= $timeout) {
                     Yii::trace("Lock wasnt received after $timeout seconds. Give up.", 'dev');
-                    Yii::endProfile("Waiting for lock of $name", 'AtomicLock::receive');
+                    Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
             }
@@ -61,12 +62,13 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function releaseLock($name)
     {
+        $origName = $name;
         if (!isset($this->semaphores[$name])) {
             return true;
         }
         $semId = $this->semaphores[$name];
         sem_release($semId);
-        Yii::endProfile("Total time in $name lock", 'AtomicLock::receive');
+        Yii::endProfile("Total time in $origName lock", 'AtomicLock::receive');
         return true;
     }
 }
