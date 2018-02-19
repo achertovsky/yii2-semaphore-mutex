@@ -36,21 +36,22 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             }
             $semKey = ftok("/tmp/$name", 'a');
             $semId = sem_get($semKey, 1);
-            $start = 0;
+            $start = time();
             Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
                 if (sem_acquire($semId, true)) {
+                    Yii::info("Lock was received");
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $origName lock", 'AtomicLock::receive');
                     $this->semaphores[$name] = $semId;
                     return true;
                 }
-                sleep(1);
                 if (!is_null($timeout) && ($res = time()-$start) >= $timeout) {
-                    Yii::trace("Lock wasnt received after $timeout seconds. Give up.", 'dev');
+                    Yii::info("Lock wasnt received after $timeout seconds. Give up.", 'dev');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
+                sleep(1);
             }
         } catch (\Exception $ex) {
             Yii::error($ex->getMessage().' '.$ex->getTraceAsString());
