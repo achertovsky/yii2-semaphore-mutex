@@ -72,6 +72,9 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         }
         $semId = $this->semaphores[$name];
         sem_release($semId);
+        if (file_exists("/tmp/$name")) {
+            unlink("/tmp/$name");
+        }
         Yii::endProfile("Total time in $origName lock", 'AtomicLock::receive');
         return true;
     }
