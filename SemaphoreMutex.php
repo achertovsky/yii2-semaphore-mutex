@@ -50,7 +50,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
                     if (file_exists("/tmp/$name")) {
                         unlink("/tmp/$name");
                     }
-                    Yii::trace("Lock wasnt received after $timeout seconds. Give up.", 'dev');
+                    Yii::info("Lock wasnt received after $timeout seconds. Give up.", 'dev');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
