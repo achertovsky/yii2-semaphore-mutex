@@ -86,26 +86,19 @@ class SemaphoreMutex extends \yii\mutex\Mutex
     }
 
     /**
-     * Returns semaphore handler
+     * Removes semaphore. Use it only when unlikely someone will work with same semaphore in short period again
+     * Wrong usage may create races.
      *
      * @param string $name
      * @return void
      */
-    public function getSemId($name)
+    public function removeSemaphore($name)
     {
         $name = md5($name);
-        return isset($this->semaphores[$name]) ? $this->semaphores[$name] : null;
-    }
-
-    /**
-     * Removes semaphore. Use it only when unlikely someone will work with same semaphore in short period again
-     * Wrong usage may create races.
-     *
-     * @param string $semId
-     * @return void
-     */
-    public function removeSemaphore($semId)
-    {
+        if (!isset($this->semaphores[$name])) {
+            return true;
+        }
+        $semId = $this->semaphores[$name];
         sem_remove($semId);
     }
 }
