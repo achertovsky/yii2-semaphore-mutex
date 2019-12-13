@@ -90,7 +90,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      * Wrong usage may create races.
      *
      * @param string $name
-     * @return void
+     * @return boolean
      */
     public function removeSemaphore($name)
     {
@@ -99,6 +99,6 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             return true;
         }
         $semId = $this->semaphores[$name];
-        sem_remove($semId);
+        return sem_remove($semId);
     }
 }
