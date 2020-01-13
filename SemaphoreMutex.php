@@ -71,6 +71,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         $origName = $name;
         $name = md5($name);
         if (!isset($this->semaphores[$name])) {
+            Yii::info("No semaphore was released by name $name ".var_export($this->semaphores, true));
             return true;
         }
         $semId = $this->semaphores[$name];
