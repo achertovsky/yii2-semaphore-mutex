@@ -21,6 +21,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
     /**
      * Receives shared memory segment by provided key
      * Shared memory is used in exclusive mode, so its providing atomic access
+     *
      * @param string $name
      * @param int $timeout
      * @return boolean
@@ -47,7 +48,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
                     return true;
                 }
                 if (!is_null($timeout) && ($res = time()-$start) >= $timeout) {
-                    Yii::info("Lock wasnt received after $timeout seconds. Give up.", 'dev');
+                    Yii::trace("Lock wasnt received after $timeout seconds. Give up.", 'dev');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
@@ -64,6 +65,8 @@ class SemaphoreMutex extends \yii\mutex\Mutex
     
     /**
      * Releases used shared memory
+     *
+     * @param string $name
      * @return boolean
      */
     public function releaseLock($name)
@@ -81,5 +84,22 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         }
         Yii::endProfile("Total time in $origName lock", 'AtomicLock::receive');
         return true;
+    }
+
+    /**
+     * Removes semaphore. Use it only when unlikely someone will work with same semaphore in short period again
+     * Wrong usage may create races.
+     *
+     * @param string $name
+     * @return boolean
+     */
+    public function removeSemaphore($name)
+    {
+        $name = md5($name);
+        if (!isset($this->semaphores[$name])) {
+            return true;
+        }
+        $semId = $this->semaphores[$name];
+        return sem_remove($semId);
     }
 }
