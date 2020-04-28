@@ -40,7 +40,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             $start = time();
             Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
-                if (sem_acquire($semId, true)) {
+                if (sem_acquire($semId, is_null($timeout) ? false : true)) {
                     Yii::trace("Lock was received");
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $origName lock", 'AtomicLock::receive');
