@@ -26,7 +26,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      * @param int $timeout
      * @return boolean
      */
-    public function acquireLock($name, $timeout = null)
+    public function acquireLock($name, $timeout = null, $limit = 1)
     {
         //fix issue with reserved characters by hashing the name
         $origName = $name;
@@ -36,7 +36,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
                 touch("/tmp/$name");
             }
             $semKey = ftok("/tmp/$name", 'a');
-            $semId = sem_get($semKey, 1);
+            $semId = sem_get($semKey, $limit);
             $start = time();
             Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
