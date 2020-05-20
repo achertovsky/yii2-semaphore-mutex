@@ -74,13 +74,13 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         $origName = $name;
         $name = md5($name);
         if (!isset($this->semaphores[$name])) {
-            Yii::info("Release: failure. Name: $origName. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
+            Yii::trace("Release: failure. Name: $origName. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
             return true;
         }
         $semId = $this->semaphores[$name];
         $result = sem_release($semId);
         if ($result) {
-            Yii::info("Release: success. Name: $origName", 'semaphore');
+            Yii::trace("Release: success. Name: $origName", 'semaphore');
         } else {
             Yii::error("Release: failure. Name: $origName", 'semaphore');
         }
