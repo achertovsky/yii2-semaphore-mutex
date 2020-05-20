@@ -73,6 +73,10 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function releaseLock($name)
     {
+        if (!isset($this->semaphores[$name])) {
+            Yii::trace("Release: failure. Name: $name. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
+            return true;
+        }
         $semId = $this->semaphores[$name];
         $result = sem_release($semId);
         if ($result) {
