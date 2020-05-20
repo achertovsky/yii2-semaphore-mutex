@@ -41,14 +41,14 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
                 if (sem_acquire($semId, is_null($timeout) ? false : true)) {
-                    Yii::trace("Lock was received", 'semaphore');
+                    Yii::trace("Aquire: success: Name: $name", 'semaphore');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $origName lock", 'AtomicLock::receive');
                     $this->semaphores[$name] = $semId;
                     return true;
                 }
                 if (!is_null($timeout) && ($res = time()-$start) >= $timeout) {
-                    Yii::trace("Lock wasnt received after $timeout seconds. Give up.", 'semaphore');
+                    Yii::trace("Aquire: Failure. Name: $name. Reason: Lock wasnt received after $timeout seconds. Give up.", 'semaphore');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
@@ -74,11 +74,16 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         $origName = $name;
         $name = md5($name);
         if (!isset($this->semaphores[$name])) {
-            Yii::info("No semaphore was released by name $name ".var_export($this->semaphores, true), 'semaphore');
+            Yii::info("Release: failure. Name: $name. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
             return true;
         }
         $semId = $this->semaphores[$name];
-        sem_release($semId);
+        $result = sem_release($semId);
+        if ($result) {
+            Yii::info("Release: success. Name: $name");
+        } else {
+            Yii::error("Release: failure. Name: $name");
+        }
         if (file_exists("/tmp/$name")) {
             unlink("/tmp/$name");
         }
