@@ -59,7 +59,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         } catch (\Exception $ex) {
             Yii::error($ex->getMessage().' '.$ex->getTraceAsString(), 'semaphore');
             if (file_exists("/tmp/$name")) {
-                unlink("/tmp/$name");
+                @unlink("/tmp/$name");
             }
             return false;
         }
@@ -85,7 +85,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             Yii::error("Release: failure. Name: $name", 'semaphore');
         }
         if (file_exists("/tmp/$name")) {
-            unlink("/tmp/$name");
+            @unlink("/tmp/$name");
         }
         Yii::endProfile("Total time in $name lock", 'AtomicLock::receive');
         return true;
