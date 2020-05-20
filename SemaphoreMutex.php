@@ -41,14 +41,14 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             Yii::beginProfile("Waiting for lock of $origName", 'AtomicLock::receive');
             while (1) {
                 if (sem_acquire($semId, is_null($timeout) ? false : true)) {
-                    Yii::trace("Aquire: success: Name: $name", 'semaphore');
+                    Yii::trace("Aquire: success: Name: $origName", 'semaphore');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $origName lock", 'AtomicLock::receive');
                     $this->semaphores[$name] = $semId;
                     return true;
                 }
-                if (!is_null($timeout) && ($res = time()-$start) >= $timeout) {
-                    Yii::trace("Aquire: Failure. Name: $name. Reason: Lock wasnt received after $timeout seconds. Give up.", 'semaphore');
+                if (!is_null($timeout) && (time()-$start) >= $timeout) {
+                    Yii::trace("Aquire: Failure. Name: $origName. Reason: Lock wasnt received after $timeout seconds. Give up.", 'semaphore');
                     Yii::endProfile("Waiting for lock of $origName", 'AtomicLock::receive');
                     return false;
                 }
@@ -74,15 +74,15 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         $origName = $name;
         $name = md5($name);
         if (!isset($this->semaphores[$name])) {
-            Yii::info("Release: failure. Name: $name. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
+            Yii::info("Release: failure. Name: $origName. No semaphore was found in array ".var_export($this->semaphores, true), 'semaphore');
             return true;
         }
         $semId = $this->semaphores[$name];
         $result = sem_release($semId);
         if ($result) {
-            Yii::info("Release: success. Name: $name");
+            Yii::info("Release: success. Name: $origName", 'semaphore');
         } else {
-            Yii::error("Release: failure. Name: $name");
+            Yii::error("Release: failure. Name: $origName", 'semaphore');
         }
         if (file_exists("/tmp/$name")) {
             unlink("/tmp/$name");
