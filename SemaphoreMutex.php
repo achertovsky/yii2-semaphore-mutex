@@ -100,7 +100,6 @@ class SemaphoreMutex extends \yii\mutex\Mutex
      */
     public function removeSemaphore($name)
     {
-        $name = md5($name);
         if (!isset($this->semaphores[$name])) {
             return true;
         }
