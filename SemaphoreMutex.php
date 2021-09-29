@@ -43,7 +43,7 @@ class SemaphoreMutex extends \yii\mutex\Mutex
             Yii::beginProfile("Waiting for lock of $name", 'AtomicLock::receive');
             while (1) {
                 if (sem_acquire($semId, is_null($timeout) ? false : true)) {
-                    Yii::trace("Aquire: success: Name: $name".microtime(true)."(ms)", 'semaphore');
+                    Yii::trace("Aquire: success: Name: $name; ".microtime(true)."(ms)", 'semaphore');
                     Yii::endProfile("Waiting for lock of $name", 'AtomicLock::receive');
                     Yii::beginProfile("Total time in $name lock", 'AtomicLock::receive');
                     $this->semaphores[$name] = $semId;
@@ -80,9 +80,9 @@ class SemaphoreMutex extends \yii\mutex\Mutex
         $semId = $this->semaphores[$name];
         $result = sem_release($semId);
         if ($result) {
-            Yii::trace("Release: success. Name: $name".microtime(true)."(ms)", 'semaphore');
+            Yii::trace("Release: success. Name: $name; ".microtime(true)."(ms)", 'semaphore');
         } else {
-            Yii::error("Release: failure. Name: $name".microtime(true)."(ms)", 'semaphore');
+            Yii::error("Release: failure. Name: $name; ".microtime(true)."(ms)", 'semaphore');
         }
         if (file_exists("/tmp/$name")) {
             @unlink("/tmp/$name");
